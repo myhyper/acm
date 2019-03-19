@@ -2,200 +2,64 @@ import sys
 f = sys.stdin
 debug = True
 #debug = None
-if debug: f = open("1006.txt")
+if debug: f = open("1006b.txt")
 tc = int( f.readline() )
 
-wes = [3,3,3, 4,4,4,4,4,4,4,4,4, 5,5,5,5,5,5,5, 6]
-pri = [
-    # 1
-    [0,1,2,
-     0,1,2],
-    # 2
-    [0,1,1,
-     0,2,2],
-    # 3
-    [0,0,2,
-     1,1,2],
-    # 4
-    [0,1,2,
-     3,1,2],
-    # 5
-    [0,1,2,
-     0,1,3],
-    # 6
-    [0,1,1,
-     0,2,3],
-    # 7
-    [0,1,2,
-     0,3,3],
-    # 8
-    [0,0,3,
-     1,2,3],
-    # 9
-    [0,1,2,
-     3,3,2],
-    # 10
-    [0,1,2,
-     0,3,2],
-    # 11
-    [0,1,1,
-     2,2,3],
-    # 12
-    [0,0,1,
-     2,3,3],
-    # 13
-    [0,1,2,
-     3,1,4],
-    # 14
-    [0,1,1,
-     2,3,4],
-    # 15
-    [0,1,2,
-     3,4,4],
-    # 16
-    [0,0,1,
-     2,3,4],
-    # 17
-    [0,1,2,
-     3,3,4],
-    # 18
-    [0,1,2,
-     3,4,2],
-    # 19
-    [0,1,2,
-     0,3,4],
-    # 20
-    [0,1,2,
-     3,4,5],
-]
+def calc( idx, prev, last ):
+    result = dp[idx][prev][last]
+    if result != -1: return result
+    inner, outer, both = False, False, False
+    
+    tmp = (idx + N) % N
+    inner = w[0][idx] + w[0][tmp] <= n
+    outer = w[1][idx] + w[1][tmp] <= n
+    both = w[0][idx] + w[1][idx] <= n
+    
+    if idx == N - 1:
+        if idx == 0: 
+            if both: return 1
+            else: return 2
+        result = 2 
+        if last == 0: 
+            if inner and not (prev & 1):  result = 1 
+            if outer and prev < 2: result = 1 
+            if both: result = 1 
+            if inner and outer and prev == 0: result = 0 
+        elif last == 1: 
+            if outer and prev < 2: result = 1
+        elif last == 2: 
+            if inner and not (prev & 1): result = 1
+        return result
+    
+    tmp = 0
+    if idx: tmp = last
+    result = 2 + calc(idx + 1, 0, tmp)
+    
+    if inner and not (prev & 1):
+        tmp = 1
+        if idx: tmp = last 
+        result = min(result, 1 + calc(idx + 1, 1, tmp))
+    if outer and prev < 2:
+        tmp = 2
+        if idx: tmp = last
+        result = min(result, 1 + calc(idx + 1, 2, tmp))
+    if inner and outer and prev == 0:
+        tmp = 3
+        if idx: tmp = last
+        result = min(result, calc(idx + 1, 3, tmp))
+    if both:
+        tmp = 0
+        if idx: tmp = last 
+        result = min(result, 1 + calc(idx + 1, 3, tmp))
+    return result
+
 for t in range(tc):
-    l,n = map(int, f.readline().split())
+    ip = f.readline()
+    if '\n' ==ip: ip = f.readline()
+    N,n = map(int, ip.split())
     w=[]
     w.append(list(map(int, f.readline().split())))
     w.append(list(map(int, f.readline().split())))
-    dp  = [ [0]*l for i in range(2) ]
-    pts = [ [0]*l for i in range(2) ]
+    dp  = [ [ [-1]*4 for i in range(4) ]*4 for i in range(10000) ]
 
-    idx = 1
-    for i in range(l):
-        x = i%l
-
-        if debug: print("({}) =>".format(x))
-
-        for p in range(len(pri)):
-        #for p in range(1):
-            matched = True
-            ss = [0] * 6
-            xx = -1
-            for dy in range(2):
-                for ddx in range(-1,2):
-                    xx += 1
-                    dx = ddx + x
-                    if l <= dx: dx -= l
-                    if dx < 0:  dx += l
-                    #if debug: print("\t{},{}".format(dx,dy))
-
-                    if 0 != dp[0][x] and 0 != dp[1][x]:
-                        matched = False
-                        #if debug: print("skipped")
-                        break ## already filled
-                    if 0 != dp[0][x] or 0 != dp[1][x]:
-                        if pri[p][1] == pri[p][4]:
-                            matched = False
-                            #if debug: print("pattern {} skipped".format(p+1))
-                            break ## already filled
-                
-                    ii = pri[p][xx]
-                    ss[ii] += w[dy][dx]
-                    #print("pz = {}".format(ii))
-                    #print(ss)
-                    if n < ss[ii]:
-                        matched = False
-                        break
-                    # consider the previous block
-                    if 0 != dp[0][dx] and -1 == ddx:
-                        if pri[p][0] != pri[p][3]:
-                            if dp[0][dx] == dp[1][dx]:
-                                matched = False
-                                break
-                        else:
-                            if dp[0][dx] != dp[1][dx]:
-                                matched = False
-                                break
-                    # consider the next block
-                    if 0 != dp[0][dx] and 1 == ddx:
-                        if pri[p][2] != pri[p][5]:
-                            if dp[0][dx] == dp[1][dx]:
-                                matched = False
-                                break
-                        else:
-                            if dp[0][dx] != dp[1][dx]:
-                                matched = False
-                                break
-                    # blocked prev and next exception
-                    if 0 != dp[0][dx] and -1 == ddx:
-                        sx = ddx + 1
-                        if l <= sx: sx -= l
-                        if 0 != dp[0][sx]:
-                            if w[0][x] + w[1][x] <= n:
-                                if pri[p][1] != pri[p][4]:
-                                    matched = False
-                                    break
-                            
-                if matched == False: break
-            if matched == True:
-                if debug: print("pattern {} matched cnt={} ".format(p+1, wes[p]))
-                found = False
-                xx = -1
-                for dy in range(2):
-                    for dx in range(-1,2):
-                        xx += 1
-                        dx += x
-                        if l <= dx: dx -= l
-                        if dx < 0:  dx += l
-                        if 0 == dp[dy][dx] and pri[p][xx] == pri[p][1]:
-                            #print("\tx {},{} xx={} pri[p][1]={}".format(dx,dy,xx,pri[p][1]))
-                            dp[dy][dx] = idx
-                            pts[dy][dx] = p
-                            found = True    
-                if found: idx += 1
-                print(dp[0])
-                print(dp[1])
-
-                found = False
-                xx = -1
-                for dy in range(2):
-                    for dx in range(-1,2):
-                        xx += 1
-                        dx += x
-                        if l <= dx: dx -= l
-                        if dx < 0:  dx += l
-                        if 0 == dp[dy][dx] and pri[p][xx] == pri[p][4]:
-                            #print("\tx2 {},{}".format(dx,dy))
-                            dp[dy][dx] = idx
-                            pts[dy][dx] = p
-                            found = True    
-                if found: idx += 1
-                print(dp[0])
-                print(dp[1])
-                print("")
-                break
-            else:
-                #print("parttern {} not matched, next".format(p+1))
-                a=1
-        # else case
-        if dp[0][x] == 0:
-            dp[0][x] = idx
-            pts[0][x] = -p
-            idx += 1
-        if dp[1][x] == 0:
-            dp[1][x] = idx
-            pts[1][x] = -p
-            idx += 1
-
-
-    if debug: print(w[0])
-    if debug: print(w[1])
-    if debug: print(pts[0])
-    if debug: print(pts[1])
-    print(idx-1)
+    print( calc(0,0,0) )
