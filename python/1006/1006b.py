@@ -2,7 +2,7 @@ import sys
 f = sys.stdin
 debug = True
 #debug = None
-if debug: f = open("1006.txt")
+if debug: f = open("1006e.txt")
 tc = int( f.readline() )
 def calc( idx, prev, last ):
     result     = dp[idx][prev][last]
