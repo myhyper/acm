@@ -1,8 +1,8 @@
 import sys
 sys.setrecursionlimit(999999)
 f = sys.stdin.readline
-dbg = 0
-if dbg: f = open('input.txt').readline
+dbg = 1
+if dbg: f = open('input4.txt').readline
 C,R = map(int,f().split())
 arr = []
 for r in range(R):
