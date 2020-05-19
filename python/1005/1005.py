@@ -4,7 +4,7 @@ debug = True
 if debug: import time
 if debug: start_time = time.time()
 f = sys.stdin
-if debug: f = open("1005b.txt")
+if debug: f = open("1005.txt")
 
 tc = int( f.readline() )
 for t in range(tc):

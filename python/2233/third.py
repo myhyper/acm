@@ -1,6 +1,6 @@
 import sys
 f = sys.stdin.readline
-dbg = 1
+dbg = 0
 prt = 0
 if dbg: f = open('input4.txt').readline
 
