@@ -1,0 +1,1 @@
+a,b=int(input()),int(input());o=[_ for _ in range(a,b+1) if len([d for d in range(1,_+1) if _%d==0])==2];print(f'{sum(o)}\n{o[0]}' if o else -1)
